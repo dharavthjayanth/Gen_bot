@@ -17,10 +17,34 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
+
 SYSTEM_PROMPT = (
     "You are a helpful assistant. "
-    "Answer user questions clearly, simply, and politely."
+    "Answer clearly, simply, and politely."
 )
+
+
+def get_context(user_query):
+    try:
+        with open("data.txt", "r") as f:
+            data = f.read()
+
+        lines = data.split("\n")
+        relevant = []
+
+        for line in lines:
+            for word in user_query.lower().split():
+                if word in line.lower():
+                    relevant.append(line)
+                    break
+
+        return "\n".join(relevant[:3]) 
+
+    except Exception:
+        return ""
+
+
+
 
 @app.route("/")
 def home():
@@ -41,7 +65,15 @@ def chat():
         history = session.get("chat_history", [])
 
         
-        conversation = SYSTEM_PROMPT + "\n\nConversation:\n"
+        context = get_context(user_message)
+
+        
+        conversation = SYSTEM_PROMPT + "\n\n"
+
+        if context:
+            conversation += f"Relevant information:\n{context}\n\n"
+
+        conversation += "Conversation:\n"
 
         for item in history[-6:]:
             conversation += f"{item['role']}: {item['text']}\n"
@@ -56,7 +88,7 @@ def chat():
 
         bot_reply = response.text if response.text else "Sorry, no response."
 
-        
+       
         history.append({"role": "user", "text": user_message})
         history.append({"role": "assistant", "text": bot_reply})
         session["chat_history"] = history
@@ -64,7 +96,7 @@ def chat():
         return jsonify({"reply": bot_reply})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
 @app.route("/clear", methods=["POST"])

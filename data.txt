@@ -1,0 +1,5 @@
+AI stands for Artificial Intelligence.
+Flask is a Python web framework.
+Gemini is a generative AI model by Google.
+RAG means Retrieval-Augmented Generation.
+Render is a cloud deployment platform.
