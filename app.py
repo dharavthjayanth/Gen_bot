@@ -6,15 +6,15 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey123"  # change this in real projects
+app.secret_key = "supersecretkey123"  
 
-# Load Gemini API key
+
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
     raise ValueError("GEMINI_API_KEY not found in .env file")
 
-# Initialize Gemini client
+
 client = genai.Client(api_key=API_KEY)
 
 SYSTEM_PROMPT = (
@@ -38,18 +38,18 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message cannot be empty"}), 400
 
-        # Get previous history
+      
         history = session.get("chat_history", [])
 
-        # Build prompt with basic memory
+      
         conversation_text = SYSTEM_PROMPT + "\n\nConversation so far:\n"
 
-        for item in history[-6:]:  # last 6 messages only
+        for item in history[-6:]:  
             conversation_text += f"{item['role']}: {item['text']}\n"
 
         conversation_text += f"user: {user_message}\nassistant:"
 
-        # Send to Gemini
+        
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=conversation_text
@@ -57,7 +57,7 @@ def chat():
 
         bot_reply = response.text if response.text else "Sorry, I could not generate a response."
 
-        # Save history
+        
         history.append({"role": "user", "text": user_message})
         history.append({"role": "assistant", "text": bot_reply})
         session["chat_history"] = history
